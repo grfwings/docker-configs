@@ -13,13 +13,51 @@ services:
       - jellyfin-config:/config 
       - jellyfin-cache:/cache 
       - type: bind
-        source: /srv/jellyfin/media
-        target: /media
+        source: /srv/jellyfin/media/
+        target: /jellyfin/media/
         read_only: true
     restart: unless-stopped
     # Optional - may be necessary for docker healthcheck to pass if running in host network mode
     extra_hosts:
       - 'host.docker.internal:host-gateway'
+
+  qbittorrent:
+    container_name: qbittorrent
+    image: ghcr.io/hotio/qbittorrent
+    ports:
+      - 8080:8080
+    environment:
+      - PUID=${USER_ID} 
+      - PGID=${GROUP_ID} 
+      - TZ=${TIMEZONE}
+      - UMASK=002
+      - WEBUI_PORTS=8080/tcp,8080/udp
+      - VPN_ENABLED=true 
+      - VPN_CONF=wg0 
+      - VPN_PROVIDER=proton 
+      - VPN_LAN_NETWORK=192.168.1.0/24 
+      - VPN_LAN_LEAK_ENABLED=false
+      - VPN_EXPOSE_PORTS_ON_LAN 
+      - VPN_AUTO_PORT_FORWARD=true 
+      - VPN_AUTO_PORT_FORWARD_TO_PORTS= 
+      - VPN_KEEP_LOCAL_DNS=false 
+      - VPN_FIREWALL_TYPE=auto 
+      - VPN_HEALTHCHECK_ENABLED=true
+      - PRIVOXY_ENABLED=false
+      - UNBOUND_ENABLED=false 
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1 
+      - net.ipv6.conf.all.disable_ipv6=1 
+    devices:
+      - /dev/net/tun:/dev/net/tun 
+    volumes:
+      - qbittorrent-config:/config
+      - type: bind
+        source: /srv/jellyfin/torrents/
+        target: /jellyfin/torrents/
+
 
   lidarr:
     image: lscr.io/linuxserver/lidarr:latest
@@ -31,55 +69,58 @@ services:
     volumes: 
       - lidarr-config:/config
       - type: bind
-        source: /srv/jellyfin/media/
-        target: /jellyfin
-      - type: bind
-        source: /srv/jellyfin/torrents/
-        target: /torrents
+        source: /srv/jellyfin/
+        target: /jellyfin/
     ports:
       - 8686:8686
     restart: unless-stopped
 
-  qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:latest
-    container_name: qbittorrent
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID} 
       - TZ=${TIMEZONE}
-      - WEBUI_PORT=8080
-      - TORRENTING_PORT=6881
     volumes:
+      - radarr-config:/config
       - type: bind
-        source: /srv/jellyfin/torrents/
-        target: /torrents
-      - qbittorrent-config:/config
-    network_mode: service:gluetun
+        source: /srv/jellyfin/
+        target: /jellyfin/
+    ports:
+      - 7878:7878
     restart: unless-stopped
 
-  gluetun:
-    image: qmcgaw/gluetun
-    container_name: gluetun
-    cap_add:
-      - NET_ADMIN
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    ports:
-      - 8080:8080
-      - 6881:6881
-      - 6881:6881/udp
-    volumes:
-      - gluetn-config:/config
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID} 
       - TZ=${TIMEZONE}
-      - VPN_SERVICE_PROVIDER=protonvpn
-      - VPN_TYPE=openvpn
-      # OpenVPN:
-      - OPENVPN_USER=36PiaVkUwRP4KQI6
-      - OPENVPN_PASSWORD=MjMG0ZLdZLJnt0RP3DDmauBhMIaCeKyr
-      - UPDATER_PERIOD=24h
+    volumes:
+      - sonarr-config:/config
+      - type: bind
+        source: /srv/jellyfin/
+        target: /jellyfin/
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+
+  readarr:
+    image: lscr.io/linuxserver/readarr:develop
+    container_name: readarr
+    environment:
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID} 
+      - TZ=${TIMEZONE}
+    volumes:
+      - readarr-config:/config
+      - type: bind
+        source: /srv/jellyfin/
+        target: /jellyfin/
+    ports:
+      - 8787:8787
     restart: unless-stopped
 
   prowlarr:
@@ -91,6 +132,9 @@ services:
       - TZ=${TIMEZONE}
     volumes:
       - prowlarr-config:/config
+      - type: bind
+        source: /srv/jellyfin/
+        target: /jellyfin/
     ports:
       - 9696:9696
     restart: unless-stopped
@@ -100,6 +144,8 @@ volumes:
   jellyfin-cache:
   lidarr-config:
   qbittorrent-config:
-  qbittorrent-downloads:
   gluetn-config:
   prowlarr-config:
+  sonarr-config:
+  readarr-config:
+  radarr-config:
