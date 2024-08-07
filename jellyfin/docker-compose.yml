@@ -8,7 +8,9 @@ services:
       - PUID=${USER_ID} 
       - PGID=${GROUP_ID} 
       - TZ=${TIMEZONE}
-    network_mode: 'host'
+    ports:
+      - 8096:8096
+    #network_mode: 'host'
     volumes:
       - jellyfin-config:/config 
       - jellyfin-cache:/cache 
@@ -26,6 +28,7 @@ services:
     image: ghcr.io/hotio/qbittorrent
     ports:
       - 8080:8080
+    hostname: qbittorrent.internal
     environment:
       - PUID=${USER_ID} 
       - PGID=${GROUP_ID} 
@@ -57,7 +60,6 @@ services:
       - type: bind
         source: /srv/jellyfin/torrents/
         target: /jellyfin/torrents/
-
 
   lidarr:
     image: lscr.io/linuxserver/lidarr:latest
@@ -137,6 +139,18 @@ services:
         target: /jellyfin/
     ports:
       - 9696:9696
+    restart: unless-stopped
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=${TIMEZONE}
+    ports:
+      - 8191:8191
     restart: unless-stopped
 
 volumes: 
