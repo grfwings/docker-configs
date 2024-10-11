@@ -1,0 +1,76 @@
+services:
+  hydrusclient:
+    image: grfwings/hydrus
+    container_name: hydrusclient
+    restart: unless-stopped
+    environment:
+      - UID=1000
+      - GID=1000
+      - VNC_EXTRA=-SecurityTypes=VncAuth -rfbauth /opt/hydrus/db/vncpasswd
+    volumes:
+      - type: bind
+        source: ./db/
+        target: /opt/hydrus/db/
+      - type: bind
+        source: ./backups/
+        target: /backups/
+    tmpfs:
+      - /tmp #optional for SPEEEEEEEEEEEEEEEEEEEEEEEEED and less disk access
+    ports:
+      - 5800:5800   #noVNC
+      - 5900:5900   #VNC
+        #- 45868:45868 #Booru
+      - 45869:45869 #API
+
+  hydrus-web:
+    image: ghcr.io/floogulinc/hydrus-web:dev
+    container_name: hydrus-web
+    restart: unless-stopped
+    ports:
+      - 5500:5500 # READ
+
+  hybooru-pg:
+    image: postgres
+    container_name: hybooru-pg
+    environment:
+      - POSTGRES_USER=hybooru
+      - POSTGRES_PASSWORD=hybooru
+      - POSTGRES_DB=hybooru
+    ports:
+      - 5432:5432
+    volumes:
+      - hybooru-pg-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  hybooru:
+    image: grfwings/hybooru:next
+    container_name: hybooru
+    environment:
+      - HYDRUS_ADMIN_PASSWORD=HydrusWizard
+    depends_on:
+      hybooru-pg:
+        condition: service_started
+    ports:
+      - 3939:80
+    volumes:
+      - type: bind
+        source: ./backups/hydrus-backup/
+        target: /opt/hydrus/db/
+    restart: unless-stopped
+
+  hydownloader:
+    image: grfwings/hydownloader
+    container_name: hydownloader
+      #environment:
+    ports:
+      - 53211:53211
+    volumes:
+      - hydownloader-data:/db
+      - type: bind
+        source: ./db/
+        target: /hydrus/
+    command: [ "hydownloader-daemon", "start", "--path", "/db", "--with-autoimporter"]
+  
+volumes:
+  hybooru-pg-data:
+  hydownloader-data:
