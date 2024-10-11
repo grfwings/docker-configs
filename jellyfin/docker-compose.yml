@@ -60,6 +60,7 @@ services:
       - type: bind
         source: /srv/jellyfin/torrents/
         target: /jellyfin/torrents/
+    restart: unless-stopped
 
   lidarr:
     image: lscr.io/linuxserver/lidarr:latest
@@ -110,7 +111,7 @@ services:
     restart: unless-stopped
 
   readarr:
-    image: lscr.io/linuxserver/readarr:develop
+    image: ghcr.io/hotio/readarr
     container_name: readarr
     environment:
       - PUID=${USER_ID}
@@ -153,6 +154,42 @@ services:
       - 8191:8191
     restart: unless-stopped
 
+  jellyseerr:
+    container_name: jellyseerr
+    image: ghcr.io/hotio/jellyseerr
+    ports:
+      - 5055:5055
+    environment:
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID} 
+      - UMASK=002
+      - TZ=${TIMEZONE}
+    volumes:
+      - jellyseerr-config:/config
+
+  audiobookshelf:
+    container_name: audiobookshelf
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    ports:
+      - 13378:80
+    environment:
+      - PUID=${USER_ID} 
+      - PGID=${GROUP_ID} 
+      - TZ=${TIMEZONE}
+    volumes:
+      - type: bind
+        source: /srv/jellyfin/torrents/audiobooks/
+        target: /audiobooks/
+      - type: bind
+        source: /srv/audiobookshelf/podcasts/
+        target: /podcasts/
+      - type: bind
+        source: /srv/audiobookshelf/config/
+        target: /config/
+      - type: bind
+        source: /srv/audiobookshelf/metadata/
+        target: /metadata/
+
 volumes: 
   jellyfin-config:
   jellyfin-cache:
@@ -163,3 +200,4 @@ volumes:
   sonarr-config:
   readarr-config:
   radarr-config:
+  jellyseerr-config:
