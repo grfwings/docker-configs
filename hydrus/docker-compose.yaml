@@ -1,12 +1,12 @@
 services:
   hydrusclient:
-    image: grfwings/hydrus
+    image: ghcr.io/grfwings/hydrus 
     container_name: hydrusclient
     restart: unless-stopped
     environment:
       - UID=1000
       - GID=1000
-      - VNC_EXTRA=-SecurityTypes=VncAuth -rfbauth /opt/hydrus/db/vncpasswd
+      - TZ=US/Pacific
     volumes:
       - type: bind
         source: ./db/
@@ -14,13 +14,12 @@ services:
       - type: bind
         source: ./backups/
         target: /backups/
+      - ssh-config:/etc/ssh/
     tmpfs:
       - /tmp #optional for SPEEEEEEEEEEEEEEEEEEEEEEEEED and less disk access
     ports:
-      - 5800:5800   #noVNC
-      - 5900:5900   #VNC
-        #- 45868:45868 #Booru
       - 45869:45869 #API
+      - 2222:22     #SSH
 
   hydrus-web:
     image: ghcr.io/floogulinc/hydrus-web:dev
@@ -59,7 +58,7 @@ services:
     restart: unless-stopped
 
   hydownloader:
-    image: grfwings/hydownloader
+    image: grfwings/hydownloader:latest
     container_name: hydownloader
       #environment:
     ports:
@@ -69,8 +68,9 @@ services:
       - type: bind
         source: ./db/
         target: /hydrus/
-    command: [ "hydownloader-daemon", "start", "--path", "/db", "--with-autoimporter"]
+    command: ["hydownloader-daemon", "start", "--path", "/db", "--with-autoimporter"]
   
 volumes:
   hybooru-pg-data:
   hydownloader-data:
+  ssh-config:

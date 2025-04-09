@@ -18,6 +18,9 @@ services:
         source: /srv/jellyfin/media/
         target: /jellyfin/media/
         read_only: true
+      - type: bind
+        source: ./configs/jellyfin-web/config.json
+        target: /jellyfin/jellyfin-web/config.json
     restart: unless-stopped
     # Optional - may be necessary for docker healthcheck to pass if running in host network mode
     extra_hosts:
