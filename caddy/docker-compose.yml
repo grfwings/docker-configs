@@ -14,6 +14,36 @@ services:
       - caddy_data:/data
     restart: unless-stopped
 
+  anubis:
+    image: ghcr.io/techarohq/anubis:latest
+    container_name: anubis
+    environment:
+      BIND: ":8923"
+      TARGET: "http://b01_zola:80"
+      DIFFICULTY: "4"
+      #METRICS_BIND: ":9090"
+      #SERVE_ROBOTS_TXT: "true"
+      #POLICY_FNAME: "/data/cfg/botPolicy.yaml"
+      #    ports:
+      #      - "8923:8923"
+    networks:
+      - caddy
+    restart: unless-stopped
+
+  zola:
+    image: ghcr.io/grfwings/b01-zola:latest
+    container_name: b01_zola
+    ports:
+      - "8180:80"
+    networks:
+      - caddy
+    labels:
+      caddy: www.betweenzeroand.one
+      caddy.reverse_proxy: http://anubis:8923
+      caddy.reverse_proxy.header_up_1: "X-Real-Ip {remote_host}"
+      caddy.reverse_proxy.header_up_2: "X-Http_Version {http.request.proto}"
+    restart: unless-stopped
+
 networks:
   caddy:
     external: true

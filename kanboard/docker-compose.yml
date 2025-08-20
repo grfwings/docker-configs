@@ -4,7 +4,6 @@ services:
   app:
     image: ghcr.io/kanboard/kanboard:latest
     container_name: kanboard
-    restart: always
     ports:
      - "5226:80"
     volumes:
@@ -12,6 +11,13 @@ services:
      - ./plugins:/var/www/app/plugins
     environment: 
       - PLUGIN_INSTALLER=true
+    networks:
+      - caddy
+    labels:
+      caddy: kanboard.betweenzeroand.one
+      caddy.reverse_proxy: "{{upstreams 80}}"
+    restart: unless-stopped
+
 volumes:
   data:
     driver: local
@@ -20,3 +26,6 @@ volumes:
   certs:
     driver: local
 
+networks:
+  caddy:
+    external: true
