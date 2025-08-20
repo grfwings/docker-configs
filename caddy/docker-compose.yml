@@ -19,7 +19,7 @@ services:
     container_name: anubis
     environment:
       BIND: ":8923"
-      TARGET: "http://b01_zola:80"
+      TARGET: "http://b01-zola:80"
       DIFFICULTY: "4"
       #METRICS_BIND: ":9090"
       #SERVE_ROBOTS_TXT: "true"
@@ -32,7 +32,7 @@ services:
 
   zola:
     image: ghcr.io/grfwings/b01-zola:latest
-    container_name: b01_zola
+    container_name: b01-zola
     ports:
       - "8180:80"
     networks:
