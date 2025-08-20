@@ -20,6 +20,11 @@ services:
       - type: bind
         source: ./configs/jellyfin-web/config.json
         target: /jellyfin/jellyfin-web/config.json
+    networks:
+      - caddy
+    labels:
+      caddy: jellyfin.betweenzeroand.one
+      caddy.reverse_proxy: "{{upstreams 8096}}"
     restart: unless-stopped
     # Optional - may be necessary for docker healthcheck to pass if running in host network mode
     extra_hosts:
@@ -62,6 +67,11 @@ services:
       - type: bind
         source: /srv/jellyfin/torrents/
         target: /jellyfin/torrents/
+    networks:
+      - caddy
+    labels:
+      caddy: qbt.betweenzeroand.one
+      caddy.reverse_proxy: "{{upstreams 8080}}"
     restart: unless-stopped
 
   lidarr:
@@ -78,6 +88,11 @@ services:
         target: /jellyfin/
     ports:
       - 8686:8686
+    networks:
+      - caddy
+    labels:
+      caddy: lidarr.betweenzeroand.one
+      caddy.reverse_proxy: "{{upstreams 8686}}"
     restart: unless-stopped
 
   radarr:
@@ -94,6 +109,11 @@ services:
         target: /jellyfin/
     ports:
       - 7878:7878
+    networks:
+      - caddy
+    labels:
+      caddy: radarr.betweenzeroand.one
+      caddy.reverse_proxy: "{{upstreams 7878}}"
     restart: unless-stopped
 
   sonarr:
@@ -110,6 +130,11 @@ services:
         target: /jellyfin/
     ports:
       - 8989:8989
+    networks:
+      - caddy
+    labels:
+      caddy: sonarr.betweenzeroand.one
+      caddy.reverse_proxy: "{{upstreams 8989}}"
     restart: unless-stopped
 
   readarr:
@@ -126,6 +151,12 @@ services:
         target: /jellyfin/
     ports:
       - 8787:8787
+    networks:
+      - caddy
+    labels:
+      caddy: readarr.betweenzeroand.one
+      caddy.reverse_proxy: "{{upstreams 8787}}"
+
     restart: unless-stopped
 
   prowlarr:
@@ -142,6 +173,11 @@ services:
         target: /jellyfin/
     ports:
       - 9696:9696
+    networks:
+      - caddy
+    labels:
+      caddy: prowlarr.betweenzeroand.one
+      caddy.reverse_proxy: "{{upstreams 9696}}"
     restart: unless-stopped
 
   flaresolverr:
@@ -154,6 +190,11 @@ services:
       - TZ=${TIMEZONE}
     ports:
       - 8191:8191
+    networks:
+      - caddy
+    labels:
+      caddy: flaresolverr.betweenzeroand.one
+      caddy.reverse_proxy: "{{upstreams 8191}}"
     restart: unless-stopped
 
   jellyseerr:
@@ -168,6 +209,12 @@ services:
       - TZ=${TIMEZONE}
     volumes:
       - jellyseerr-config:/config
+    networks:
+      - caddy
+    labels:
+      caddy: jellyseerr.betweenzeroand.one
+      caddy.reverse_proxy: "{{upstreams 5055}}"
+
 
   audiobookshelf:
     container_name: audiobookshelf
@@ -191,6 +238,12 @@ services:
       - type: bind
         source: /srv/audiobookshelf/metadata/
         target: /metadata/
+    networks:
+      - caddy
+    labels:
+      caddy: audiobookshelf.betweenzeroand.one
+      caddy.reverse_proxy: "{{upstreams 80}}"
+    restart: unless-stopped
 
 volumes: 
   jellyfin-config:
@@ -203,3 +256,7 @@ volumes:
   readarr-config:
   radarr-config:
   jellyseerr-config:
+
+networks:
+  caddy:
+    external: true
