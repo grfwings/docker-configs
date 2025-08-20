@@ -1,0 +1,22 @@
+# More information at https://docs.kanboard.org/v1/admin/docker/
+name: kanboard
+services:
+  app:
+    image: ghcr.io/kanboard/kanboard:latest
+    container_name: kanboard
+    restart: always
+    ports:
+     - "5226:80"
+    volumes:
+     - ./data:/var/www/app/data
+     - ./plugins:/var/www/app/plugins
+    environment: 
+      - PLUGIN_INSTALLER=true
+volumes:
+  data:
+    driver: local
+  plugins:
+    driver: local
+  certs:
+    driver: local
+
