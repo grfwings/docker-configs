@@ -11,7 +11,6 @@ services:
     labels:
       caddy: www.betweenzeroand.one
       caddy.reverse_proxy: "{{upstreams 80}}"
-      caddy.tls: "internal"
     restart: unless-stopped
 
 networks:
