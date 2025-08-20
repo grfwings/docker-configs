@@ -5,12 +5,13 @@ services:
       dockerfile: Dockerfile
     container_name: b01_zola
     ports:
-      - "8180:8180"
+      - "8180:80"
     networks:
       - caddy
     labels:
       caddy: www.betweenzeroand.one
-      caddy.reverse_proxy: "{{upstreams 8180}}"
+      caddy.reverse_proxy: "{{upstreams 80}}"
+      caddy.tls: "internal"
     restart: unless-stopped
 
 networks:
