@@ -1,6 +1,6 @@
 services:
   hydrusclient:
-    image: ghcr.io/grfwings/hydrus 
+    image: ghcr.io/grfwings/hydrus:latest
     container_name: hydrusclient
     restart: unless-stopped
     environment:
@@ -14,12 +14,15 @@ services:
       - type: bind
         source: ./backups/
         target: /backups/
-      - ssh-config:/etc/ssh/
+      - type: bind
+        source: ./import/
+        target: /import/
     tmpfs:
       - /tmp #optional for SPEEEEEEEEEEEEEEEEEEEEEEEEED and less disk access
+    # network_mode: host 
     ports:
-      - 45869:45869 #API
-      - 2222:22     #SSH
+       - 45869:45869 #API
+       - 2222:2222   #Xpra
 
   hydrus-web:
     image: ghcr.io/floogulinc/hydrus-web:dev
