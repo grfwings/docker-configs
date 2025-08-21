@@ -24,7 +24,7 @@ services:
     networks:
       - caddy
     labels:
-      caddy: www.betweenzeroand.one
+      caddy: www.betweenzeroand.one, betweenzeroand.one
       caddy.reverse_proxy: http://anubis:8923
       caddy.reverse_proxy.header_up_1: "X-Real-Ip {remote_host}"
       caddy.reverse_proxy.header_up_2: "X-Http_Version {http.request.proto}"
