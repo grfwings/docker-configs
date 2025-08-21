@@ -1,0 +1,5 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# No scraping here because Alloy will push metrics via remote_write
