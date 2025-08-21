@@ -15,11 +15,20 @@ discovery.docker "containers" {
   refresh_interval = "10s"
 }
 
-prometheus.scrape "containers" {
-  targets    = discovery.docker.containers.targets
+prometheus.scrape "alloy" {
+  targets    = prometheus.exporter.self.alloy.targets
   forward_to = [prometheus.remote_write.prometheus.receiver]
   
   scrape_interval = "15s"
+  job_name        = "alloy"
+}
+
+prometheus.scrape "cadvisor" {
+  targets = [{"__address__" = "cadvisor:8080"}]
+  forward_to = [prometheus.remote_write.prometheus.receiver]
+  
+  scrape_interval = "15s"
+  job_name        = "cadvisor"
   metrics_path    = "/metrics"
 }
 
@@ -35,15 +44,8 @@ loki.source.docker "containers" {
   host          = "unix:///var/run/docker.sock"
   targets       = discovery.docker.containers.targets
   forward_to    = [loki.write.loki.receiver]
-  //relabel_rules = discovery.docker.containers.rules
+
+  refresh_interval = "10s"
 }
 
 prometheus.exporter.self "alloy" {}
-
-prometheus.scrape "alloy" {
-  targets    = prometheus.exporter.self.alloy.targets
-  forward_to = [prometheus.remote_write.prometheus.receiver]
-  
-  scrape_interval = "15s"
-  job_name        = "alloy"
-}
