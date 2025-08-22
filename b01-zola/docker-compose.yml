@@ -16,7 +16,7 @@ services:
       - caddy
     restart: unless-stopped
 
-  zola:
+  b01-zola:
     image: ghcr.io/grfwings/b01-zola:latest
     container_name: b01-zola
     ports:
